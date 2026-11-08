@@ -4,7 +4,7 @@ Fans open a comedian's link, choose how many votes to buy, and pay with Paystack
 
 **Stack:** Next.js 15 (App Router, TypeScript) · Tailwind v4 · Prisma · Paystack · deploy on Vercel.
 
-> **Database:** local development currently uses **SQLite** (`prisma/dev.db`). Before deploying, switch to Supabase Postgres: set `provider = "postgresql"` in `prisma/schema.prisma`, set `DATABASE_URL` to the Supabase URL, then run `npx prisma db push`.
+> **Database:** Supabase Postgres. Use the **pooler** connection strings from Supabase (Project → Connect), not the direct `db.<ref>.supabase.co` address: that one is IPv6-only and Vercel can't reach it. `DATABASE_URL` uses port 6543 (with `?pgbouncer=true&connection_limit=1`), `DIRECT_URL` uses port 5432.
 
 ## How payments are counted
 
@@ -17,7 +17,7 @@ Fans open a comedian's link, choose how many votes to buy, and pay with Paystack
 ## Local setup
 
 1. Get Paystack **test** keys from Dashboard → Settings → API Keys & Webhooks.
-2. Fill in `.env` (copy `.env.example`): `DATABASE_URL` (`file:./dev.db` for SQLite), `PAYSTACK_SECRET_KEY`, `SESSION_SECRET` (long random string), `CRON_SECRET`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`.
+2. Fill in `.env` (copy `.env.example`): `DATABASE_URL` and `DIRECT_URL` (Supabase pooler, see above), `PAYSTACK_SECRET_KEY`, `SESSION_SECRET` (long random string), `CRON_SECRET`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`.
 3. Run:
    ```bash
    npm install
