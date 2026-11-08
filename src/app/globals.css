@@ -1,26 +1,412 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * "Kano indigo": a light theme built from Northern Nigerian dye colours.
+ *  - band:    deep dye-pit indigo, used for the top band of each page
+ *  - stage:   brighter indigo, the main action colour on light ground
+ *  - saffron: the leader / number 1, and the main button on the band
+ * Our tokens are the source of truth; shadcn's names point at them.
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg: #f5f6fb;
+  --surface: #ffffff;
+  --surface-2: #eceef7;
+  --line: #dfe2ee;
+  --line-strong: #c3c8de;
+  --text: #15183f;
+  --text-muted: #565b80;
+
+  --band: #171b55;
+  --band-2: #222778;
+  --band-line: rgba(255, 255, 255, 0.14);
+  --band-muted: #b4b8e0;
+
+  --stage: #2b32a0;
+  --stage-ink: #ffffff;
+  --saffron: #f2b705;
+  --gold: #8f6300; /* saffron dark enough to read on white */
+  --silver: #6f7591;
+  --bronze: #a05a26;
+  --up: #12804a;
+  --down: #c2362b;
+
+  /* shadcn tokens → Votr palette */
+  --background: var(--bg);
+  --foreground: var(--text);
+  --card: var(--surface);
+  --card-foreground: var(--text);
+  --popover: var(--surface);
+  --popover-foreground: var(--text);
+  --primary: var(--stage);
+  --primary-foreground: var(--stage-ink);
+  --secondary: var(--surface-2);
+  --secondary-foreground: var(--text);
+  --muted: var(--surface-2);
+  --muted-foreground: var(--text-muted);
+  --accent: var(--surface-2);
+  --accent-foreground: var(--text);
+  --destructive: var(--down);
+  --border: var(--line);
+  --input: var(--line-strong);
+  --ring: var(--stage);
+  --chart-1: var(--stage);
+  --chart-2: var(--saffron);
+  --chart-3: var(--up);
+  --chart-4: var(--silver);
+  --chart-5: var(--bronze);
+  --radius: 0.75rem;
+  --sidebar: var(--surface);
+  --sidebar-foreground: var(--text);
+  --sidebar-primary: var(--stage);
+  --sidebar-primary-foreground: var(--stage-ink);
+  --sidebar-accent: var(--surface-2);
+  --sidebar-accent-foreground: var(--text);
+  --sidebar-border: var(--line);
+  --sidebar-ring: var(--stage);
 }
 
 @theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-text: var(--text);
+  --color-band: var(--band);
+  --color-band-2: var(--band-2);
+  --color-band-line: var(--band-line);
+  --color-band-muted: var(--band-muted);
+  --color-stage: var(--stage);
+  --color-saffron: var(--saffron);
+  --color-gold: var(--gold);
+  --color-silver: var(--silver);
+  --color-bronze: var(--bronze);
+  --color-up: var(--up);
+  --color-down: var(--down);
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --radius-sm: calc(var(--radius) * 0.5);
+  --radius-md: calc(var(--radius) * 0.75);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.33);
+  --radius-2xl: calc(var(--radius) * 1.66);
+  --radius-3xl: calc(var(--radius) * 2);
+  --radius-4xl: calc(var(--radius) * 2.5);
+
+  /* Atkinson Hyperlegible for reading, Anybody for headlines and numbers */
+  --font-sans: var(--font-body);
+  --font-heading: var(--font-display);
+  --font-display: var(--font-display);
+  --font-mono: var(--font-body);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+  :focus-visible {
+    outline: 3px solid var(--stage);
+    outline-offset: 2px;
+  }
+  .on-band :focus-visible {
+    outline-color: var(--saffron);
   }
 }
 
+html {
+  background: var(--band);
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100dvh;
+  line-height: 1.55;
+  overflow-x: hidden;
+  font-variant-numeric: lining-nums;
+}
+
+/* ---------- Type ---------- */
+
+/* Wide and heavy: page titles and names */
+.display {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-stretch: 118%;
+  letter-spacing: -0.02em;
+  line-height: 0.98;
+  text-wrap: balance;
+}
+/* Section headings */
+.display-tight {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-stretch: 104%;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+}
+/* Tall and narrow: vote counts and ranks, like a scoreboard */
+.num {
+  font-family: var(--font-display);
+  font-stretch: 82%;
+  font-weight: 700;
+  font-variant-numeric: lining-nums tabular-nums;
+  letter-spacing: 0;
+}
+.eyebrow {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+/* ---------- Bands ---------- */
+
+/* Full-width indigo band at the top of a page. Sits right under the header. */
+.band {
+  position: relative;
+  margin-inline: calc(50% - 50vw);
+  margin-top: -1.5rem;
+  background: var(--band);
+  color: #fff;
+  overflow: hidden;
+}
+@media (min-width: 640px) {
+  .band {
+    margin-top: -2.5rem;
+  }
+}
+
+/* ---------- Surfaces ---------- */
+
+.panel,
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+
+/* ---------- Buttons ---------- */
+
+.btn-stage,
+.btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 font-bold disabled:cursor-not-allowed disabled:opacity-50;
+  background: var(--stage);
+  color: var(--stage-ink);
+  transition:
+    background-color 0.15s ease,
+    transform 0.1s ease;
+}
+.btn-stage:hover:not(:disabled),
+.btn:hover:not(:disabled) {
+  background: #222887;
+}
+/* Saffron button for use on the indigo band */
+.btn-saffron {
+  @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 font-bold;
+  background: var(--saffron);
+  color: var(--band);
+  transition:
+    background-color 0.15s ease,
+    transform 0.1s ease;
+}
+.btn-saffron:hover {
+  background: #ffc61f;
+}
+.btn-ghost {
+  @apply inline-flex items-center justify-center gap-2 rounded-full border px-5 py-2.5 font-semibold;
+  border-color: var(--line-strong);
+  background: var(--surface);
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.1s ease;
+}
+.btn-ghost:hover {
+  background: var(--surface-2);
+  border-color: var(--silver);
+}
+.btn-stage:active:not(:disabled),
+.btn:active:not(:disabled),
+.btn-saffron:active,
+.btn-ghost:active {
+  transform: scale(0.97);
+}
+
+/* ---------- Forms ---------- */
+
+.input {
+  @apply w-full rounded-lg border px-4 py-3 outline-none;
+  background: var(--surface);
+  border-color: var(--line-strong);
+  transition: border-color 0.15s ease;
+}
+.input::placeholder {
+  color: #9296b4;
+}
+.input:focus {
+  border-color: var(--stage);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--stage) 18%, transparent);
+}
+.label {
+  @apply mb-1.5 block text-sm font-semibold;
+  color: var(--text);
+}
+
+/* ---------- Live bits ---------- */
+
+.live-dot {
+  position: relative;
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #2fd27a;
+}
+.live-dot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: inherit;
+  animation: ping 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+@keyframes ping {
+  75%,
+  100% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+
+.ticker-track {
+  display: flex;
+  width: max-content;
+  animation: ticker 45s linear infinite;
+}
+.ticker:hover .ticker-track {
+  animation-play-state: paused;
+}
+@keyframes ticker {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* Rank rings on avatars */
+.ring-gold {
+  box-shadow: 0 0 0 3px var(--surface), 0 0 0 6px var(--saffron);
+}
+.ring-silver {
+  box-shadow: 0 0 0 3px var(--surface), 0 0 0 5px #b9bed3;
+}
+.ring-bronze {
+  box-shadow: 0 0 0 3px var(--surface), 0 0 0 5px #d49a6a;
+}
+.on-band .ring-gold {
+  box-shadow: 0 0 0 3px var(--band), 0 0 0 6px var(--saffron);
+}
+
+/* Row flash when votes come in */
+@keyframes flash-up {
+  0% {
+    background-color: color-mix(in oklab, var(--up) 14%, var(--surface));
+  }
+  100% {
+    background-color: var(--surface);
+  }
+}
+.flash-up {
+  animation: flash-up 1.6s ease-out;
+}
+
+.skeleton {
+  background: linear-gradient(90deg, var(--surface-2) 0%, #f7f8fc 40%, var(--surface-2) 80%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+@keyframes shimmer {
+  from {
+    background-position: 150% 0;
+  }
+  to {
+    background-position: -50% 0;
+  }
+}
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
+  border-radius: 999px;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Kept as no-op hooks so older markup still works */
+.press,
+.lift,
+.float {
+}
+.press:active {
+  transform: scale(0.99);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ticker-track,
+  .live-dot::after,
+  .skeleton,
+  .flash-up,
+  .spinner {
+    animation: none;
+  }
+  .press:active,
+  .btn-stage:active:not(:disabled),
+  .btn:active:not(:disabled),
+  .btn-saffron:active,
+  .btn-ghost:active {
+    transform: none;
+  }
 }

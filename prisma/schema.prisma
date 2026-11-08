@@ -1,0 +1,86 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+}
+
+enum ContestStatus {
+  DRAFT
+  LIVE
+  CLOSED
+}
+
+model Contest {
+  id              String        @id @default(cuid())
+  slug            String        @unique
+  title           String
+  description     String        @default("")
+  bannerUrl       String?
+  pricePerVote    Int // in kobo
+  minVotes        Int           @default(1)
+  maxVotes        Int           @default(10000)
+  startsAt        DateTime
+  endsAt          DateTime
+  status          ContestStatus @default(DRAFT)
+  showLiveResults Boolean       @default(true)
+  createdAt       DateTime      @default(now())
+  contestants     Contestant[]
+  transactions    Transaction[]
+}
+
+model Contestant {
+  id           String        @id @default(cuid())
+  contestId    String
+  contest      Contest       @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  slug         String
+  code         String
+  name         String
+  handle       String?
+  photoUrl     String?
+  bio          String        @default("")
+  voteCount    Int           @default(0)
+  createdAt    DateTime      @default(now())
+  transactions Transaction[]
+
+  @@unique([contestId, slug])
+  @@unique([contestId, code])
+}
+
+enum TxStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  FLAGGED
+}
+
+model Transaction {
+  id              String     @id @default(cuid())
+  reference       String     @unique
+  contestId       String
+  contest         Contest    @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  contestantId    String
+  contestant      Contestant @relation(fields: [contestantId], references: [id], onDelete: Cascade)
+  votes           Int
+  amountKobo      Int
+  email           String
+  phone           String?
+  voterName       String?
+  status          TxStatus   @default(PENDING)
+  note            String?
+  paystackPayload Json?
+  paidAt          DateTime?
+  createdAt       DateTime   @default(now())
+
+  @@index([contestId, status])
+  @@index([status, createdAt])
+}
