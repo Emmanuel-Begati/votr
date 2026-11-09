@@ -1,7 +1,6 @@
 import Link from "next/link";
-import { db } from "@/lib/db";
 import { naira } from "@/lib/votes";
-import { getLiveData } from "@/lib/standings";
+import { contestBySlug, contestRows, liveData } from "@/lib/cached";
 import { Avatar } from "@/components/Avatar";
 import { Band } from "@/components/Band";
 import { InlineCountdown } from "@/components/Countdown";
@@ -10,7 +9,7 @@ import { HowItWorks } from "@/components/home/HowItWorks";
 import { GrowBar } from "@/components/home/GrowBar";
 import { ContestRow, type ContestRowData } from "@/components/home/ContestRow";
 import { AllContestsLink } from "@/components/home/AllContestsLink";
-import { getContestRows, sortActive, sortPast } from "@/lib/contests";
+import { sortActive, sortPast } from "@/lib/contests";
 import { ContestCard } from "@/components/home/ContestCard";
 
 export const dynamic = "force-dynamic";
@@ -20,7 +19,7 @@ const HOME_ACTIVE = 3;
 const HOME_PAST = 3;
 
 export default async function Home() {
-  const rows = await getContestRows();
+  const rows = await contestRows();
   const activeAll = sortActive(rows);
   const pastAll = sortPast(rows);
 
@@ -35,8 +34,8 @@ export default async function Home() {
   // Pull the contests up over the band; further when the top "See all" link sits above them.
   const pull = hidden > 0 ? "!-mt-56 sm:!-mt-[17rem]" : "!-mt-44 sm:!-mt-56";
 
-  const featured = featuredRow ? await db.contest.findUnique({ where: { id: featuredRow.id } }) : null;
-  const live = featured ? await getLiveData(featured.id, featured.showLiveResults) : null;
+  const featured = featuredRow ? await contestBySlug(featuredRow.slug) : null;
+  const live = featured ? await liveData(featured.id, featured.showLiveResults) : null;
   const top = live?.showResults ? live.standings.slice(0, 3) : [];
   const leaderVotes = top[0]?.votes || 1;
   const hasVotes = top.length > 0 && top[0].votes > 0;

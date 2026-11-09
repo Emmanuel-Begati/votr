@@ -3,7 +3,8 @@ import { Band } from "@/components/Band";
 import { BackButton } from "@/components/BackButton";
 import { ContestCard } from "@/components/home/ContestCard";
 import { ContestRow, type ContestRowData } from "@/components/home/ContestRow";
-import { getContestRows, sortActive, sortPast } from "@/lib/contests";
+import { sortActive, sortPast } from "@/lib/contests";
+import { contestRows } from "@/lib/cached";
 
 export const dynamic = "force-dynamic";
 
@@ -13,7 +14,7 @@ export const metadata: Metadata = {
 };
 
 export default async function ContestsPage() {
-  const rows = await getContestRows();
+  const rows = await contestRows();
   const active = sortActive(rows);
   const open = active.filter((r) => r.phase === "live");
   const soon = active.filter((r) => r.phase === "upcoming");

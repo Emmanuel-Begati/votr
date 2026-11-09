@@ -1,8 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { db } from "@/lib/db";
 import { isContestOpen, naira } from "@/lib/votes";
-import { getLiveData } from "@/lib/standings";
+import { contestBySlug, liveData } from "@/lib/cached";
 import { InlineCountdown } from "@/components/Countdown";
 import { BackButton } from "@/components/BackButton";
 import { Band } from "@/components/Band";
@@ -12,12 +11,7 @@ export const dynamic = "force-dynamic";
 
 type Props = { params: Promise<{ contestSlug: string }> };
 
-async function load(slug: string) {
-  return db.contest.findFirst({
-    where: { slug, status: { in: ["LIVE", "CLOSED"] } },
-    include: { _count: { select: { contestants: true } } },
-  });
-}
+const load = contestBySlug;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const c = await load((await params).contestSlug);
@@ -30,7 +24,7 @@ export default async function ContestPage({ params }: Props) {
   const now = new Date();
   const open = isContestOpen(contest, now);
   const upcoming = contest.status === "LIVE" && contest.startsAt > now;
-  const live = await getLiveData(contest.id, contest.showLiveResults);
+  const live = await liveData(contest.id, contest.showLiveResults);
 
   return (
     <div className="space-y-8 sm:space-y-10">

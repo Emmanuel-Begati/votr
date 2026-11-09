@@ -1,6 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { db } from "./db";
 import { verifyTransaction } from "./paystack";
+import { refreshPublicData } from "./cached";
 
 export type ApplyResult =
   | { ok: true; status: "SUCCESS"; votes: number; alreadyApplied: boolean }
@@ -70,6 +71,7 @@ export async function applyVerifiedPayment(reference: string): Promise<ApplyResu
     return true;
   });
 
+  if (applied) refreshPublicData();
   return { ok: true, status: "SUCCESS", votes: tx.votes, alreadyApplied: !applied };
 }
 

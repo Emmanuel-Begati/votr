@@ -9,6 +9,7 @@ import { createSession, destroySession, requireAdmin } from "@/lib/auth";
 import { applyVerifiedPayment } from "@/lib/votes";
 import { fromLocalInput, slugify } from "@/lib/util";
 import { rateLimit } from "@/lib/ratelimit";
+import { refreshPublicData } from "@/lib/cached";
 
 export type FormState = { error?: string; ok?: string } | undefined;
 
@@ -82,6 +83,7 @@ export async function createContest(_: FormState, form: FormData): Promise<FormS
   if (data.endsAt <= data.startsAt) return { error: "End date must be after start date." };
   if (await db.contest.findUnique({ where: { slug: data.slug } })) return { error: "That URL slug is already taken." };
   const c = await db.contest.create({ data });
+  refreshPublicData();
   redirect(`/admin/contests/${c.id}`);
 }
 
@@ -94,6 +96,7 @@ export async function updateContest(id: string, _: FormState, form: FormData): P
   const clash = await db.contest.findUnique({ where: { slug: data.slug } });
   if (clash && clash.id !== id) return { error: "That URL slug is already taken." };
   await db.contest.update({ where: { id }, data });
+  refreshPublicData();
   revalidatePath(`/admin/contests/${id}`);
   return { ok: "Saved." };
 }
@@ -106,6 +109,7 @@ export async function setContestStatus(id: string, form: FormData) {
   const status = Status.parse(form.get("status"));
   const c = await db.contest.update({ where: { id }, data: { status } });
   revalidatePath("/admin");
+  refreshPublicData();
   revalidatePath(`/admin/contests/${id}`);
   revalidatePath("/");
   revalidatePath("/contests");
@@ -117,6 +121,7 @@ export async function deleteContest(id: string) {
   const paid = await db.transaction.count({ where: { contestId: id, status: "SUCCESS" } });
   if (paid > 0) throw new Error("Can't delete a contest with paid votes. Close it instead.");
   await db.contest.delete({ where: { id } });
+  refreshPublicData();
   redirect("/admin");
 }
 
@@ -152,6 +157,7 @@ export async function addContestant(contestId: string, _: FormState, form: FormD
   await db.contestant.create({
     data: { contestId, slug, code, name: v.name, handle: v.handle || null, photoUrl: v.photoUrl || null, bio: v.bio },
   });
+  refreshPublicData();
   revalidatePath(`/admin/contests/${contestId}`);
   return { ok: `${v.name} added.` };
 }
@@ -170,6 +176,7 @@ export async function updateContestant(id: string, _: FormState, form: FormData)
     where: { id },
     data: { name: v.name, handle: v.handle || null, photoUrl: v.photoUrl || null, bio: v.bio },
   });
+  refreshPublicData();
   revalidatePath(`/admin/contests/${c.contestId}`);
   return { ok: "Saved." };
 }
@@ -180,6 +187,7 @@ export async function deleteContestant(id: string) {
   const paid = await db.transaction.count({ where: { contestantId: id, status: "SUCCESS" } });
   if (paid > 0) throw new Error("Can't delete a contestant who has paid votes.");
   await db.contestant.delete({ where: { id } });
+  refreshPublicData();
   revalidatePath(`/admin/contests/${c.contestId}`);
 }
 
@@ -190,6 +198,7 @@ export async function reverifyTransaction(reference: string) {
   } catch (e) {
     console.error(e);
   }
+  refreshPublicData();
   revalidatePath("/admin/transactions");
 }
 
@@ -205,5 +214,6 @@ export async function recomputeVoteCounts(contestId: string) {
   await db.$transaction(
     contestants.map((c) => db.contestant.update({ where: { id: c.id }, data: { voteCount: map.get(c.id) ?? 0 } })),
   );
+  refreshPublicData();
   revalidatePath(`/admin/contests/${contestId}`);
 }

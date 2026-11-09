@@ -1,8 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { db } from "@/lib/db";
 import { isContestOpen } from "@/lib/votes";
-import { getLiveData, getTopFans } from "@/lib/standings";
+import { contestantBySlug, liveData, topFans } from "@/lib/cached";
 import { TrophyIcon } from "@/components/icons";
 import { ContestantLive } from "./ContestantLive";
 
@@ -10,12 +9,7 @@ export const dynamic = "force-dynamic";
 
 type Props = { params: Promise<{ contestSlug: string; contestantSlug: string }> };
 
-async function load(contestSlug: string, contestantSlug: string) {
-  return db.contestant.findFirst({
-    where: { slug: contestantSlug, contest: { slug: contestSlug, status: { in: ["LIVE", "CLOSED"] } } },
-    include: { contest: true },
-  });
-}
+const load = contestantBySlug;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { contestSlug, contestantSlug } = await params;
@@ -31,7 +25,7 @@ export default async function ContestantPage({ params }: Props) {
   const p = await load(contestSlug, contestantSlug);
   if (!p) notFound();
   const c = p.contest;
-  const [live, fans] = await Promise.all([getLiveData(c.id, c.showLiveResults), getTopFans(p.id)]);
+  const [live, fans] = await Promise.all([liveData(c.id, c.showLiveResults), topFans(p.id)]);
 
   const fanWall =
     c.showLiveResults && fans.length > 0 ? (
